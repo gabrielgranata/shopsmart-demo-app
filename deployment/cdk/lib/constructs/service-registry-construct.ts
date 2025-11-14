@@ -110,9 +110,12 @@ export class ServiceRegistryConstruct extends Construct {
     });
 
     // Full service URL (computed)
-    const fullUrl = service.port && service.port !== 80 && service.port !== 443 
-      ? `${service.protocol}://${service.endpoint}:${service.port}`
-      : `${service.protocol}://${service.endpoint}`;
+    // Check if endpoint already includes protocol (e.g., API Gateway URLs)
+    const fullUrl = service.endpoint.startsWith('http://') || service.endpoint.startsWith('https://')
+      ? service.endpoint
+      : service.port && service.port !== 80 && service.port !== 443 
+        ? `${service.protocol}://${service.endpoint}:${service.port}`
+        : `${service.protocol}://${service.endpoint}`;
 
     new ssm.StringParameter(this, `${service.name}FullUrlParameter`, {
       parameterName: `${servicePrefix}/full_url`,
