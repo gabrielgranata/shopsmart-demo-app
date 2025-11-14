@@ -22,6 +22,7 @@ export interface OrderProcessingStackProps extends cdk.StackProps {
 export class OrderProcessingStack extends cdk.Stack {
   public readonly clusterName: string;
   public readonly serviceArn: string;
+  public readonly albDnsName: string;
 
   constructor(scope: Construct, id: string, props: OrderProcessingStackProps) {
     super(scope, id, props);
@@ -75,6 +76,7 @@ export class OrderProcessingStack extends cdk.Stack {
     // Set outputs
     this.clusterName = orderProcessing.clusterName;
     this.serviceArn = orderProcessing.serviceArn;
+    this.albDnsName = orderProcessing.albDnsName;
 
     // Export values for other stacks to consume
     new cdk.CfnOutput(this, 'OrderProcessingClusterName', {
@@ -97,10 +99,11 @@ export class OrderProcessingStack extends cdk.Stack {
       description: 'DNS name of the Order Processing ALB',
     });
 
-    // Keep the output for backwards compatibility but remove the export
+    // Keep the output for backwards compatibility and add export for frontend
     new cdk.CfnOutput(this, 'OrderProcessingALBDnsName', {
       value: orderProcessing.albDnsName,
       description: 'DNS name of the Order Processing ALB',
+      exportName: `${props.projectName}-${props.environment}-OrderProcessingALBDnsName`,
     });
 
     // Add tags

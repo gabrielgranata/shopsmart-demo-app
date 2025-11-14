@@ -24,7 +24,7 @@ resource = Resource.create({
 # Configure Tracing
 trace_provider = TracerProvider(resource=resource)
 otlp_trace_exporter = OTLPSpanExporter(
-    endpoint=os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://internal-shopsmart-prod-otel-312846401.us-west-2.elb.amazonaws.com:4318/v1/traces')
+    endpoint=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT']
 )
 trace_provider.add_span_processor(BatchSpanProcessor(otlp_trace_exporter))
 trace.set_tracer_provider(trace_provider)
@@ -33,7 +33,7 @@ tracer = trace.get_tracer(__name__)
 # Configure Metrics
 metric_reader = PeriodicExportingMetricReader(
     OTLPMetricExporter(
-        endpoint=os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://internal-shopsmart-prod-otel-312846401.us-west-2.elb.amazonaws.com:4318/v1/metrics')
+        endpoint=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT']
     )
 )
 meter_provider = MeterProvider(resource=resource, metric_readers=[metric_reader])
@@ -48,7 +48,7 @@ duration_histogram = meter.create_histogram("auth.duration", unit="ms", descript
 # Configure Logging
 logger_provider = LoggerProvider(resource=resource)
 otlp_log_exporter = OTLPLogExporter(
-    endpoint=os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT', 'http://internal-shopsmart-prod-otel-312846401.us-west-2.elb.amazonaws.com:4318/v1/logs')
+    endpoint=os.environ['OTEL_EXPORTER_OTLP_ENDPOINT']
 )
 logger_provider.add_log_record_processor(BatchLogRecordProcessor(otlp_log_exporter))
 handler = LoggingHandler(level=logging.INFO, logger_provider=logger_provider)

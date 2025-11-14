@@ -116,6 +116,7 @@ const monitoringStack = new MonitoringStack(app, 'ShopSmart-Monitoring-v2', {
 });
 
 // 6. Deploy Frontend stack (CloudFront + S3)
+// Runtime config will be generated post-deployment
 const frontendStack = new FrontendStack(app, 'ShopSmart-Frontend-v2', {
   ...commonProps,
 });
@@ -136,8 +137,11 @@ apiGatewayRouterStack.addDependency(productCatalogStack);
 apiGatewayRouterStack.addDependency(userAuthStack);
 // Removed OrderProcessing dependency - uses SSM parameter instead
 
-// Frontend depends on API Gateway Router
+// Frontend depends on API Gateway Router and all microservices for URLs
 frontendStack.addDependency(apiGatewayRouterStack);
+frontendStack.addDependency(productCatalogStack);
+frontendStack.addDependency(orderProcessingStack);
+frontendStack.addDependency(userAuthStack);
 
 // Service Integration depends on microservices for CloudFormation exports only
 // (SSM parameters are resolved at runtime, not deployment time)  

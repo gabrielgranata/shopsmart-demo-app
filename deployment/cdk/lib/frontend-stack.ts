@@ -69,6 +69,7 @@ export class FrontendStack extends cdk.Stack {
     });
 
     // Deploy frontend files to S3
+    // Note: runtime-config.js should be generated post-deployment using scripts/generate-frontend-config.sh
     new s3deploy.BucketDeployment(this, 'DeployFrontend', {
       sources: [
         s3deploy.Source.asset(path.join(__dirname, '../../../src/frontend'), {
