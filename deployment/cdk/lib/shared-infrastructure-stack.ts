@@ -1,5 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import { Construct } from 'constructs';
 import { VpcConstruct } from './constructs/vpc-construct';
 import { OpenTelemetryConstruct, OpenTelemetryConfig } from './constructs/opentelemetry-construct';
@@ -42,6 +44,19 @@ export class SharedInfrastructureStack extends cdk.Stack {
     this.otelSecrets = new OpenTelemetrySecretsConstruct(this, 'OpenTelemetrySecrets', {
       projectName: props.projectName,
       environment: props.environment,
+    });
+
+    // Create API Gateway CloudWatch Logs role (account-level setting)
+    const apiGatewayCloudWatchRole = new iam.Role(this, 'ApiGatewayCloudWatchRole', {
+      assumedBy: new iam.ServicePrincipal('apigateway.amazonaws.com'),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AmazonAPIGatewayPushToCloudWatchLogs'),
+      ],
+    });
+
+    // Set the CloudWatch Logs role for API Gateway at the account level
+    new apigateway.CfnAccount(this, 'ApiGatewayAccount', {
+      cloudWatchRoleArn: apiGatewayCloudWatchRole.roleArn,
     });
 
     // Export values for cross-stack references
