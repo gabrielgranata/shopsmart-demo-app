@@ -45,7 +45,9 @@ const commonProps = {
   env: { account, region },
   projectName,
   environment,
-  availabilityZones: ['us-west-2a', 'us-west-2b', 'us-west-2c'],
+  availabilityZones: cdk.Stack.of(app).availabilityZones.length > 0 
+    ? cdk.Stack.of(app).availabilityZones.slice(0, 3)
+    : [`${region}a`, `${region}b`, `${region}c`],
   otelConfig: otelConfig[environment as keyof typeof otelConfig],
 };
 
