@@ -1091,8 +1091,8 @@ def handler(event, context):
       },
       deployOptions: {
         stageName: 'v1',
-        loggingLevel: apigateway.MethodLoggingLevel.INFO,
-        dataTraceEnabled: true,
+        loggingLevel: apigateway.MethodLoggingLevel.OFF,
+        dataTraceEnabled: false,
         metricsEnabled: true,
       },
     });
