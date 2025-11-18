@@ -276,7 +276,7 @@ export class OrderProcessingEcsConstruct extends Construct {
     });
 
     const appContainer = appTaskDefinition.addContainer('order-processing-app', {
-      image: ecs.ContainerImage.fromAsset('/Users/ccaum/projects/ops2-sre-example-applications/shopsmart/cdk-shopsmart/src/services/order-processing', {
+      image: ecs.ContainerImage.fromAsset('../../src/services/order-processing', {
         platform: Platform.LINUX_AMD64,
         buildArgs: {
           BUILDKIT_INLINE_CACHE: '1',
