@@ -38,12 +38,12 @@ export class OtelCollectorStack extends cdk.Stack {
     const dtEndpointParam = ssm.StringParameter.fromStringParameterName(
       this,
       'DtEndpointParam',
-      '/shopsmart/prod/opentelemetry/endpoint'
+      `/${props.projectName}/${props.environment}/opentelemetry/endpoint`
     );
     const dtTokenParam = ssm.StringParameter.fromStringParameterName(
       this,
       'DtTokenParam',
-      '/shopsmart/prod/opentelemetry/api-token'
+      `/${props.projectName}/${props.environment}/opentelemetry/api-token`
     );
 
     // Add container
