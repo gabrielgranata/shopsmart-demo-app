@@ -1,6 +1,6 @@
 # Multi-stage Dockerfile for Order Processing Service
 # Stage 1: Build stage
-FROM --platform=linux/amd64 python:3.11-slim as builder
+FROM --platform=linux/amd64 public.ecr.aws/docker/library/python:3.11-slim as builder
 
 # Set working directory
 WORKDIR /app
@@ -21,7 +21,7 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Stage 2: Production stage
-FROM --platform=linux/amd64 python:3.11-slim as production
+FROM --platform=linux/amd64 public.ecr.aws/docker/library/python:3.11-slim as production
 
 # Set working directory
 WORKDIR /app
