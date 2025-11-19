@@ -126,7 +126,7 @@ deploy_infrastructure() {
     
     for stack in "${stacks[@]}"; do
         log_info "Deploying $stack..."
-        if cdk deploy "$stack" --require-approval never --no-rollback; then
+        if cdk deploy "$stack" --require-approval never; then
             log_success "$stack deployed successfully"
         else
             log_error "$stack deployment failed"
@@ -154,7 +154,7 @@ deploy_monitoring() {
         log_warning "No ALERT_EMAIL set, email alerts will not be configured"
     fi
     
-    if cdk deploy ShopSmart-Monitoring-v2 $cdk_context --require-approval never --no-rollback; then
+    if cdk deploy ShopSmart-Monitoring-v2 $cdk_context --require-approval never; then
         log_success "Monitoring stack deployed successfully"
     else
         log_warning "Monitoring stack deployment failed, continuing..."
