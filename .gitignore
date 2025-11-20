@@ -1,7 +1,13 @@
-*.js
 !jest.config.js
-*.d.ts
 node_modules
+
+# CDK compiled files
+/deployment/cdk/lib/**/*.js
+/deployment/cdk/lib/**/*.d.ts
+/deployment/cdk/bin/**/*.js
+/deployment/cdk/bin/**/*.d.ts
+/deployment/cdk/test/**/*.js
+/deployment/cdk/test/**/*.d.ts
 
 # CDK asset staging directory
 .cdk.staging
