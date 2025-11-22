@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-REGION="us-west-2"
+REGION="us-east-1"
 
 # Dynamically discover API Gateway endpoint from CloudFormation
 echo "Discovering API Gateway endpoint..."
@@ -88,7 +88,17 @@ case $scenario in
     echo -e "\n${YELLOW}Breaking auth service...${NC}"
     echo "Setting invalid DynamoDB table name"
     
-    # Get current Lambda function name (just the login function)
+    # Get Auth API Gateway endpoint
+    AUTH_ENDPOINT=$(aws cloudformation describe-stacks --region "$REGION" --stack-name ShopSmart-UserAuth-v2 --query 'Stacks[0].Outputs[?OutputKey==`UserAuthApiGatewayUrl`].OutputValue' --output text 2>/dev/null)
+    
+    if [ -z "$AUTH_ENDPOINT" ]; then
+      echo -e "${RED}Error: Could not find Auth API Gateway endpoint${NC}"
+      exit 1
+    fi
+    
+    echo "Auth endpoint: $AUTH_ENDPOINT"
+    
+   # Get current Lambda function name (just the login function)
     LAMBDA_NAME=$(aws lambda list-functions --region $REGION \
       --query 'Functions[?contains(FunctionName, `UserAuthLogin`)].FunctionName' \
       --output text)
@@ -116,7 +126,23 @@ case $scenario in
       --region $REGION > /dev/null
     
     echo -e "${RED}Auth service broken! All auth requests will fail.${NC}"
-    echo "Test with: curl $API_ENDPOINT/api/auth/login"
+    echo "Test with: curl -X POST ${AUTH_ENDPOINT}auth/login -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"testpassword123\"}'"
+
+    # Send 200 login requests
+    echo -e "\n${GREEN}Sending 200 login requests in parallel...${NC}"
+    LOGIN_JSON='{"email":"test@example.com","password":"testpassword123"}'
+    for i in {1..200}; do
+      (
+        HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "${AUTH_ENDPOINT}auth/login" \
+          -H "Content-Type: application/json" \
+          -d "$LOGIN_JSON")
+        echo "Request $i: HTTP $HTTP_CODE"
+      ) &
+    done
+    wait
+    echo -e "${GREEN}All requests complete${NC}\n"
+    
+ 
     ;;
     
   3)
