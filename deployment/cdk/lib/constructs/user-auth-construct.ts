@@ -1016,22 +1016,41 @@ def handler(event, context):
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'index.handler',
       memorySize: 128,
-      timeout: cdk.Duration.seconds(10),
+      timeout: cdk.Duration.seconds(30),
       logRetention: logs.RetentionDays.ONE_WEEK,
+      layers: [props.otelLayer],
       environment: {
         TABLE_NAME: userTable.tableName,
         PROJECT_NAME: props.projectName,
         ENVIRONMENT: props.environment,
+        
+        // OpenTelemetry configuration
+        OTEL_EXPORTER_OTLP_ENDPOINT: otelCollectorUrl,
+        OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
+        OTEL_SERVICE_NAME: `auth-health-service-${cdk.Stack.of(this).account}`,
+        OTEL_RESOURCE_ATTRIBUTES: `service.name=auth-health-service-${cdk.Stack.of(this).account},service.version=1.0.0,deployment.environment=${props.environment}`,
+        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
+        
+        // Configure ADOT Lambda extension to export to external collector
+        OTEL_TRACES_EXPORTER: 'otlp',
+        OTEL_METRICS_EXPORTER: 'otlp',
+        OTEL_LOGS_EXPORTER: 'otlp',
       },
       code: lambda.Code.fromInline(`
 import json
 import boto3
 import os
 import time
+import logging
 from datetime import datetime
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
 def handler(event, context):
     """Health check endpoint - no authentication required"""
+    request_id = context.aws_request_id
+    
     try:
         # Basic health check
         health_status = {
@@ -1054,6 +1073,13 @@ def handler(event, context):
             health_status['database_error'] = str(db_error)
             # Still return healthy status as this is just a connectivity check
         
+        logger.info(json.dumps({
+            'event': 'health_check',
+            'status': health_status['status'],
+            'request_id': request_id,
+            'timestamp': health_status['timestamp']
+        }))
+        
         return {
             'statusCode': 200,
             'headers': {
@@ -1064,6 +1090,13 @@ def handler(event, context):
         }
         
     except Exception as e:
+        logger.error(json.dumps({
+            'event': 'health_check_error',
+            'error': str(e),
+            'request_id': request_id,
+            'timestamp': datetime.utcnow().isoformat() + 'Z'
+        }))
+        
         return {
             'statusCode': 500,
             'headers': {
