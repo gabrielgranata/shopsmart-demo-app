@@ -1027,8 +1027,8 @@ def handler(event, context):
         // OpenTelemetry configuration
         OTEL_EXPORTER_OTLP_ENDPOINT: otelCollectorUrl,
         OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
-        OTEL_SERVICE_NAME: `auth-health-service-${cdk.Stack.of(this).account}`,
-        OTEL_RESOURCE_ATTRIBUTES: `service.name=auth-health-service-${cdk.Stack.of(this).account},service.version=1.0.0,deployment.environment=${props.environment}`,
+        OTEL_SERVICE_NAME: `auth-service-${cdk.Stack.of(this).account}`,
+        OTEL_RESOURCE_ATTRIBUTES: `service.name=auth-service-${cdk.Stack.of(this).account},service.version=1.0.0,deployment.environment=${props.environment}`,
         AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
         
         // Configure ADOT Lambda extension to export to external collector

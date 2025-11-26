@@ -1,7 +1,11 @@
 #!/bin/bash
 set -e
 
-REGION="us-east-1"
+REGION=${REGION-"us-east-1"}
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+
+echo "Account ID: $ACCOUNT_ID | Region: $REGION"
+echo ""
 
 # Dynamically discover API Gateway endpoint from CloudFormation
 echo "Discovering API Gateway endpoint..."
@@ -9,8 +13,6 @@ API_ENDPOINT=$(aws cloudformation describe-stacks --region "$REGION" --stack-nam
 
 if [ -z "$API_ENDPOINT" ]; then
     echo "Error: Could not find API Gateway endpoint from CloudFormation"
-    echo "Falling back to manual discovery..."
-    API_ENDPOINT="http://shopsmart-prod-v2-api-gateway-989395160.us-west-2.elb.amazonaws.com"
 fi
 
 echo "Using API endpoint: $API_ENDPOINT"
