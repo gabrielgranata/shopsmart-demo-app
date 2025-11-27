@@ -34,6 +34,6 @@ jobs:
           npm ci
           npm run build
 
-      - name: Deploy all stacks
+      - name: Deploy UserAuth stack
         working-directory: deployment/cdk
-        run: npx cdk deploy --all --require-approval never
+        run: npx cdk deploy ShopSmart-UserAuth-v2 --require-approval never
