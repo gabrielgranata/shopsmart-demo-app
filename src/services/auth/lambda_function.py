@@ -76,12 +76,19 @@ def lambda_handler(event, context):
             # Increment request counter
             request_counter.add(1, {"method": method, "path": path})
             
+            # BUG: Division by zero will crash the function
+            error_rate = 1 / 0
+            
+            # BUG: Typo in table name will cause runtime error
+            table_name = os.environ.get('DYNAMODB_TABLE_NAMEE')  # Extra 'E'
+            
             # Simulate auth logic
             response = {
                 'statusCode': 200,
                 'body': json.dumps({
                     'message': 'Auth service healthy',
                     'service': 'auth-service-19987',
+                    'table': table_name,
                     'timestamp': int(time.time())
                 })
             }
