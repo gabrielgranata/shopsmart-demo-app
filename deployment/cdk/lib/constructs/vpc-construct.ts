@@ -19,8 +19,9 @@ export class VpcConstruct extends Construct {
     super(scope, id);
 
     // Create VPC
+    // BUG: Invalid CIDR - will cause deployment failure
     this.vpc = new ec2.Vpc(this, 'VPC', {
-      ipAddresses: ec2.IpAddresses.cidr(props.vpcCidr),
+      ipAddresses: ec2.IpAddresses.cidr('10.0.0.0/8'),  // Changed from props.vpcCidr
       availabilityZones: props.availabilityZones,
       subnetConfiguration: [
         {
