@@ -161,7 +161,7 @@ export class UserAuthConstruct extends Construct {
     const loginFunction = new lambda.Function(this, 'LoginFunction', {
       runtime: lambda.Runtime.PYTHON_3_9,
       handler: 'index.handler',
-      description: 'User login with structured logging v6',
+      description: 'User login with structured logging v8',
       memorySize: props.lambdaLoginMemory,
       timeout: cdk.Duration.seconds(30),
       vpc: props.vpc,
@@ -269,6 +269,9 @@ def handler(event, context):
             }
         
         user = response['Items'][0]
+        
+        # Intentional bug: accessing non-existent key will throw KeyError
+        invalid_attempts = user['loginAttempts']
         
         if user['passwordHash'] != password_hash:
             logger.warning(json.dumps({
@@ -1018,23 +1021,10 @@ def handler(event, context):
       memorySize: 128,
       timeout: cdk.Duration.seconds(30),
       logRetention: logs.RetentionDays.ONE_WEEK,
-      layers: [props.otelLayer],
       environment: {
         TABLE_NAME: userTable.tableName,
         PROJECT_NAME: props.projectName,
         ENVIRONMENT: props.environment,
-        
-        // OpenTelemetry configuration
-        OTEL_EXPORTER_OTLP_ENDPOINT: otelCollectorUrl,
-        OTEL_EXPORTER_OTLP_PROTOCOL: 'http/protobuf',
-        OTEL_SERVICE_NAME: `auth-service-${cdk.Stack.of(this).account}`,
-        OTEL_RESOURCE_ATTRIBUTES: `service.name=auth-service-${cdk.Stack.of(this).account},service.version=1.0.0,deployment.environment=${props.environment}`,
-        AWS_LAMBDA_EXEC_WRAPPER: '/opt/otel-instrument',
-        
-        // Configure ADOT Lambda extension to export to external collector
-        OTEL_TRACES_EXPORTER: 'otlp',
-        OTEL_METRICS_EXPORTER: 'otlp',
-        OTEL_LOGS_EXPORTER: 'otlp',
       },
       code: lambda.Code.fromInline(`
 import json
